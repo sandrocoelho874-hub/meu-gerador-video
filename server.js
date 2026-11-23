@@ -15,12 +15,27 @@ app.post('/api/gerar-video', upload.single('image'), async (req, res) => {
         const promptOriginal = req.body.prompt || "a beautiful scene";
         const estilo = req.body.estilo || "Realistic";
 
-        // MÁGICA AQUI: Junta o texto do usuário com a palavra-chave do estilo
-        const promptCompleto = `A ${estilo} style image of ${promptOriginal}, high quality, masterpiece`;
+        // MÁGICA 1: Monta o prompt básico
+        let promptCompleto = `A ${estilo} style image of ${promptOriginal}, high quality, masterpiece`;
         
+        // MÁGICA 2: Se o usuário pedir algo impossível (voar/flutuar) e o estilo for Realista, 
+        // o código troca automaticamente para Surrealista para a IA não ignorar o pedido.
+        if (promptOriginal.toLowerCase().includes('voando') || promptOriginal.toLowerCase().includes('flutuando')) {
+            if (estilo === 'Realistic') {
+                promptCompleto = `A surrealist fantasy style image of ${promptOriginal}, highly detailed, magical realism, masterpiece`;
+            }
+        }
+
         const promptEncoded = encodeURIComponent(promptCompleto);
-        const url = `https://image.pollinations.ai/prompt/${promptEncoded}?width=512&height=512&nologo=true`;
         
+        // MÁGICA 3: Prompt negativo (diz para a IA o que NÃO desenhar)
+        const negativePrompt = encodeURIComponent("realistic ground, street, pavement, boring, low quality");
+        
+        // MÁGICA 4: Parâmetros enhance=true (melhora o prompt) e model=flux (IA mais inteligente)
+        const url = `https://image.pollinations.ai/prompt/${promptEncoded}?width=1024&height=1024&nologo=true&enhance=true&model=flux&negative_prompt=${negativePrompt}`;
+        
+        console.log("URL gerada:", url);
+
         const resposta = await axios.get(url, { responseType: 'arraybuffer' });
         const imagemBase64 = Buffer.from(resposta.data).toString('base64');
         const imagemUrl = `data:image/jpeg;base64,${imagemBase64}`;
