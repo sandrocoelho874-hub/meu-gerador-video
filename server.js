@@ -11,8 +11,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.post('/api/gerar-video', upload.single('image'), async (req, res) => {
     try {
         console.log("1. Recebi imagem, preparando para Pollinations.ai...");
-        const prompt = encodeURIComponent(req.body.prompt || "a beautiful scene");
-        const url = `https://image.pollinations.ai/prompt/${prompt}?width=512&height=512&nologo=true`;
+        
+        const promptOriginal = req.body.prompt || "a beautiful scene";
+        const estilo = req.body.estilo || "Realistic";
+
+        // MÁGICA AQUI: Junta o texto do usuário com a palavra-chave do estilo
+        const promptCompleto = `A ${estilo} style image of ${promptOriginal}, high quality, masterpiece`;
+        
+        const promptEncoded = encodeURIComponent(promptCompleto);
+        const url = `https://image.pollinations.ai/prompt/${promptEncoded}?width=512&height=512&nologo=true`;
         
         const resposta = await axios.get(url, { responseType: 'arraybuffer' });
         const imagemBase64 = Buffer.from(resposta.data).toString('base64');
