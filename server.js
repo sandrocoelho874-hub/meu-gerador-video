@@ -7,6 +7,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
+// ROTA DE PING PARA O UPTIMEROBOT
+app.get('/ping', (req, res) => res.send('OK'));
+
 app.post('/api/gerar-video', async (req, res) => {
     try {
         const promptOriginal = req.body.prompt || "uma bela cena";
@@ -30,7 +33,7 @@ app.post('/api/gerar-video', async (req, res) => {
         res.json({ videoUrl: imagemUrl });
 
     } catch (erro) {
-        console.error("ERRO NO TERMUX:", erro.message);
+        console.error("ERRO NO SERVIDOR:", erro.message);
         res.status(500).json({ erro: "Falha ao gerar." });
     }
 });
